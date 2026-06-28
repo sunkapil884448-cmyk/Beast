@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>राधे राधे | CYBER-TANDAV MISSION CONTROL</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Noto+Sans+Devanagari:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg:#050000; --primary:#8b0000; --accent:#ff1a1a; --glow:#ff0000; 
+  --text:#ffecec; --card:rgba(20,0,0,0.5); --border:rgba(139,0,0,0.4);
+}
+body {
+  font-family:'Rajdhani','Noto Sans Devanagari',sans-serif;
+  background:var(--bg); color:var(--text);
+  overflow:hidden; transition:background 0.6s, color 0.4s;
+}
+body[data-theme="raktabeej"] { --bg:#050000; --primary:#8b0000; --accent:#ff1a1a; --glow:#ff0000; --text:#ffecec; --card:rgba(20,0,0,0.55); --border:rgba(139,0,0,0.45); }
+body[data-theme="mahakali"] { --bg:#000000; --primary:#7c3aed; --accent:#a855f7; --glow:#9333ea; --text:#f5eaff; --card:rgba(15,0,25,0.6); --border:rgba(124,58,237,0.35); }
+body[data-theme="clash"] { --bg:#0a0000; --primary:#dc2626; --accent:#7c3aed; --glow:#ff0055; --text:#fff1f2; --card:rgba(25,0,15,0.6); --border:rgba(220,38,38,0.4); }
+body[data-theme="hacker"] { --bg:#000a02; --primary:#00ff88; --accent:#00ff41; --glow:#00ff88; --text:#d1ffe9; --card:rgba(0,20,10,0.55); --border:rgba(0,255,136,0.3); }
+body[data-theme="divya"] { --bg:#fff8e1; --primary:#b8860b; --accent:#ffd700; --glow:#ffcc33; --text:#3a2a00; --card:rgba(255,255,255,0.85); --border:rgba(184,134,11,0.3); }
+
+#bg-canvas { position:fixed; inset:0; z-index:0; }
+.scanlines { position:fixed; inset:0; pointer-events:none; z-index:2; background:repeating-linear-gradient(transparent 0 2px, rgba(255,255,255,0.03) 2px 3px); opacity:0.4; mix-blend-mode:soft-light; }
+
+.glass {
+  background:var(--card); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--border); border-radius:16px;
+  transition:all 0.3s cubic-bezier(0.2,0.8,0.2,1);
+  box-shadow:0 4px 24px rgba(0,0,0,0.3);
+}
+.glass:hover { transform:translateY(-2px); box-shadow:0 10px 30px -5px color-mix(in srgb, var(--glow) 30%, transparent), 0 0 20px color-mix(in srgb, var(--glow) 15%, transparent); border-color:var(--primary); }
+.neon { text-shadow:0 0 8px var(--glow), 0 0 20px var(--glow); color:var(--accent); }
+.btn { padding:8px 14px; border-radius:10px; background:color-mix(in srgb, var(--primary) 20%, transparent); border:1px solid var(--border); transition:all 0.2s; cursor:pointer; font-weight:600; font-size:14px; }
+.btn:hover { background:color-mix(in srgb, var(--primary) 35%, transparent); box-shadow:0 0 12px var(--glow); }
+.btn.active { background:var(--primary); color:black; box-shadow:0 0 16px var(--glow); }
+.btn:disabled { opacity:0.5; cursor:not-allowed; }
+
+.holo { width:52px; height:52px; perspective:700px; }
+.cube { width:100%; height:100%; position:relative; transform-style:preserve-3d; animation:spin 7s linear infinite; }
+.face { position:absolute; width:52px; height:52px; border:1px solid var(--primary); background:radial-gradient(circle, color-mix(in srgb, var(--primary) 20%, transparent), transparent); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:18px; color:var(--primary); box-shadow:inset 0 0 15px var(--glow), 0 0 15px color-mix(in srgb, var(--glow) 50%, transparent); }
+.front{transform:translateZ(26px)} .back{transform:rotateY(180deg) translateZ(26px)} .right{transform:rotateY(90deg) translateZ(26px)} .left{transform:rotateY(-90deg) translateZ(26px)} .top{transform:rotateX(90deg) translateZ(26px)} .bottom{transform:rotateX(-90deg) translateZ(26px)}
+@keyframes spin { to{ transform:rotateX(360deg) rotateY(360deg) } }
+
+#blood-drips { position:fixed; inset:0; pointer-events:none; z-index:3; opacity:0; transition:0.5s; }
+body[data-theme="raktabeej"] #blood-drips, body[data-theme="clash"] #blood-drips { opacity:1; }
+.drop { position:absolute; top:-30px; width:3px; height:24px; background:linear-gradient(to bottom, #ff2a2a, #8b0000 80%, transparent); border-radius:2px; animation:drip linear infinite; filter:drop-shadow(0 0 6px #ff0000); }
+@keyframes drip { to{ transform:translateY(110vh) } }
+
+#kali-eyes { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; z-index:1; opacity:0; transition:0.8s; }
+body[data-theme="mahakali"] #kali-eyes, body[data-theme="clash"] #kali-eyes { opacity:0.13; }
+.eyes { width:420px; max-width:80vw; height:140px; position:relative; }
+.eye { position:absolute; width:110px; height:110px; border-radius:50%; background:radial-gradient(circle at 50% 40%, #c084fc 0%, #7c3aed 30%, #1a0033 60%, black 80%); box-shadow:0 0 30px #a855f7, 0 0 70px #7c3aed, inset 0 0 20px black; animation:blink 7s infinite; }
+.eye.left{ left:0 } .eye.right{ right:0 }
+.pupil { position:absolute; top:50%; left:50%; width:28px; height:38px; background:black; border-radius:50%; transform:translate(-50%,-50%); box-shadow:0 0 10px #ff0000; }
+@keyframes blink { 0%,92%,100%{ transform:scaleY(1)} 94%,96%{ transform:scaleY(0.05)} }
+
+#mandala { position:fixed; inset:0; pointer-events:none; z-index:1; opacity:0; transition:0.6s; background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke="%23d4a017" stroke-opacity="0.15" stroke-width="0.5"><circle cx="100" cy="100" r="90"/><circle cx="100" cy="100" r="70"/><circle cx="100" cy="100" r="50"/><g transform="translate(100 100)"><path d="M0-90 L0 90 M-90 0 L90 0 M-63-63 L63 63 M-63 63 L63-63"/><g transform="rotate(22.5)"><path d="M0-90 L0 90 M-90 0 L90 0 M-63-63 L63 63 M-63 63 L63-63"/></g></g></svg>'); background-position:center; background-repeat:no-repeat; background-size:700px; }
+body[data-theme="divya"] #mandala { opacity:0.18; }
+
+.flash { position:fixed; inset:0; background:white; mix-blend-mode:screen; opacity:0; pointer-events:none; z-index:4; transition:opacity 0.1s; }
+
+.nav-btn { width:100%; text-align:left; padding:10px 14px; border-radius:12px; display:flex; align-items:center; gap:10px; font-weight:600; transition:all 0.2s; border:1px solid transparent; opacity:0.8; font-size:14px; }
+.nav-btn:hover { background:color-mix(in srgb, var(--primary) 15%, transparent); opacity:1; }
+.nav-btn.active { background:color-mix(in srgb, var(--primary) 25%, transparent); border-color:var(--primary); box-shadow:inset 0 0 12px color-mix(in srgb, var(--glow) 20%, transparent); opacity:1; }
+
+.tab { display:none; animation:fade 0.4s; }
+.tab.active { display:block; }
+@keyframes fade { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)} }
+
+.road-node { padding:10px 16px; border-radius:12px; background:color-mix(in srgb, var(--primary) 15%, transparent); border:1px solid var(--primary); box-shadow:0 0 15px color-mix(in srgb, var(--glow) 30%, transparent); font-weight:700; white-space:nowrap; font-size:13px; }
+.road-line { flex:1; height:2px; background:linear-gradient(90deg, transparent, var(--primary), transparent); box-shadow:0 0 8px var(--glow); min-width:30px; }
+
+.timeline-block { padding:10px 12px; border-left:3px solid var(--primary); margin-bottom:8px; background:color-mix(in srgb, var(--primary) 8%, transparent); border-radius:0 8px 8px 0; cursor:pointer; transition:0.2s; }
+.timeline-block.done { opacity:0.5; text-decoration:line-through; border-left-color:#00ff88; }
+
+input, textarea, select { background:color-mix(in srgb, var(--bg) 85%, black); border:1px solid var(--border); color:var(--text); padding:9px 12px; border-radius:10px; outline:none; width:100%; transition:0.2s; font-family:inherit; }
+input:focus, textarea:focus { border-color:var(--primary); box-shadow:0 0 0 2px color-mix(in srgb, var(--glow) 30%, transparent); }
+body[data-theme="divya"] input, body[data-theme="divya"] textarea { background:rgba(255,253,240,0.9); color:#2a1f00; }
+body[data-theme="hacker"] input, body[data-theme="hacker"] textarea { background:#001408; color:#00ff88; font-family:'JetBrains Mono',monospace; border-color:#005a34; }
+
+::-webkit-scrollbar { width:8px; height:8px; }
+::-webkit-scrollbar-thumb { background:color-mix(in srgb, var(--primary) 60%, transparent); border-radius:4px; }
+
+.war-territory { cursor:pointer; transition:all .3s; position:relative; overflow:hidden; }
+.war-territory:hover { transform:scale(1.03); filter:brightness(1.2); }
+.war-territory.owned { border-color:#00ff88; box-shadow:0 0 20px #00ff8850, inset 0 0 20px #00ff8820; }
+.war-territory.owned::after { content:'✓'; position:absolute; top:8px; right:10px; color:#00ff88; font-weight:900; font-size:20px; text-shadow:0 0 10px #00ff88; }
+
+.kill-feed { position:fixed; right:12px; bottom:12px; width:280px; max-height:220px; overflow:hidden; z-index:50; pointer-events:none; }
+.kill-item { background:rgba(0,0,0,0.85); border-left:3px solid var(--accent); padding:6px 10px; margin-bottom:4px; font-size:12px; border-radius:6px; animation:slideIn .3s; backdrop-filter:blur(6px); font-family:'JetBrains Mono',monospace; }
+@keyframes slideIn { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+
+.shake { animation:war-shake 0.6s cubic-bezier(.36,.07,.19,.97) both; }
+@keyframes war-shake { 10%,90%{transform:translate3d(-1px,0,0)}20%,80%{transform:translate3d(2px,0,0)}30%,50%,70%{transform:translate3d(-4px,0,0)}40%,60%{transform:translate3d(4px,0,0)} }
+
+.question-drop { position:absolute; top:-100px; left:50%; transform:translateX(-50%); background:var(--card); border:2px solid var(--primary); padding:14px 18px; border-radius:12px; box-shadow:0 0 30px var(--glow); animation:drop 0.6s cubic-bezier(0.2,0.8,0.2,1) forwards; z-index:60; width:90%; max-width:320px; backdrop-filter:blur(20px); }
+@keyframes drop { to{ top:20%; } }
+
+@media (max-width:768px){
+  .glass:hover{ transform:none }
+  .nav-btn{ padding:8px 10px; font-size:13px }
+  .kill-feed { width:200px; right:8px; bottom:8px; }
+}
+</style>
+</head>
+<body data-theme="raktabeej">
+<canvas id="bg-canvas"></canvas>
+<div class="scanlines"></div>
+<div id="blood-drips"></div>
+<div id="kali-eyes"><div class="eyes"><div class="eye left"><div class="pupil"></div></div><div class="eye right"><div class="pupil"></div></div></div></div>
+<div id="mandala"></div>
+<div class="flash" id="flash"></div>
+<div class="kill-feed" id="killFeed"></div>
+
+<div class="relative z-10 flex flex-col h-screen">
+  <header class="glass rounded-none border-0 border-b sticky top-0 z-30 px-3 md:px-5 py-2.5 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <div class="holo hidden sm:block"><div class="cube"><div class="face front">CT</div><div class="face back">CT</div><div class="face right"></div><div class="face left"></div><div class="face top"></div><div class="face bottom"></div></div></div>
+      <div>
+        <h1 class="text-[15px] sm:text-xl md:text-2xl font-bold leading-tight neon tracking-wide">राधे राधे | CYBER-TANDAV MISSION CONTROL</h1>
+        <p class="text-[10px] sm:text-xs opacity-70 -mt-0.5">Future OSCP • Hacker War-Room • No Excuses</p>
+      </div>
+    <div class="flex items-center gap-2 md:gap-3">
+      <div id="clock" class="hidden md:block text-right font-mono text-sm px-3 py-1.5 rounded-lg glass" style="font-family:'JetBrains Mono',monospace">00:00:00 IST</div>
+      <div class="flex gap-1.5">
+        <button class="theme-btn w-7 h-7 rounded-full border-2 border-white/20 active" data-theme="raktabeej" title="Raktabeej" style="background:#8b0000"></button>
+        <button class="theme-btn w-7 h-7 rounded-full border-2 border-white/20" data-theme="mahakali" title="Mahakali" style="background:#4c1d95"></button>
+        <button class="theme-btn w-7 h-7 rounded-full border-2 border-white/20" data-theme="clash" title="War" style="background:linear-gradient(90deg,#8b0000,#4c1d95)"></button>
+        <button class="theme-btn w-7 h-7 rounded-full border-2 border-white/20" data-theme="hacker" title="Hacker" style="background:#00ff88"></button>
+        <button class="theme-btn w-7 h-7 rounded-full border-2 border-white/20" data-theme="divya" title="Divya" style="background:#ffd700"></button>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex flex-1 overflow-hidden flex-col md:flex-row">
+    <nav class="md:w-[240px] lg:w-[270px] shrink-0 p-2 md:p-3 border-b md:border-b-0 md:border-r border-[var(--border)] overflow-x-auto md:overflow-y-auto bg-black/20 md:bg-transparent">
+      <div class="flex md:flex-col gap-1.5 md:gap-2 min-w-max md:min-w-0">
+        <button class="nav-btn active" data-tab="dashboard"><span>📊</span> DASHBOARD</button>
+        <button class="nav-btn" data-tab="certs"><span>🏆</span> CERTIFICATIONS</button>
+        <button class="nav-btn" data-tab="books"><span>📚</span> BOOKS & MINDSET</button>
+        <button class="nav-btn" data-tab="labs"><span>🧪</span> LABS</button>
+        <button class="nav-btn" data-tab="mission"><span>💻</span> COMPUTER MISSION</button>
+        <button class="nav-btn" data-tab="finance"><span>💰</span> जिम्मेदारी & FINANCE</button>
+        <button class="nav-btn" data-tab="timetable"><span>⏰</span> TIME TABLE</button>
+        <button class="nav-btn" data-tab="notes"><span>📝</span> PERSONAL NOTES</button>
+        <button class="nav-btn" data-tab="experiment"><span>🔬</span> EXPERIMENT LOG</button>
+        <button class="nav-btn" data-tab="warroom"><span>⚔️</span> STUDY-BATTLE-WAR-ROOM</button>
+        <button class="nav-btn" data-tab="testmode"><span>🧠</span> STUDY-TEST-MODE</button>
+      </div>
+      <div class="mt-3">
+        <button id="exam-battle-btn" class="w-full text-left px-3.5 py-2.5 rounded-xl flex items-center gap-2.5 font-bold transition-all border border-[var(--accent)] hover:shadow-[0_0_16px_var(--glow)]" style="background:linear-gradient(90deg, color-mix(in srgb, var(--primary) 25%, transparent), color-mix(in srgb, var(--accent) 15%, transparent));">
+          <span class="text-lg">🎯</span> <span class="text-[13px] leading-tight">STUDY-EXAM-BATTLE<br>WAR-ROOM</span>
+        </button>
+      </div>
+      <div class="hidden md:block mt-4 p-3 glass text-xs">
+        <div id="clock-mob" class="font-mono text-center" style="font-family:'JetBrains Mono',monospace"></div>
+        <div class="mt-2 opacity-70 text-center leading-snug">इतना दर्द काफी है या और चाहिए</div>
+      </div>
+    </nav>
+
+    <main class="flex-1 overflow-y-auto p-3 md:p-5 lg:p-6">
+      
+      <section id="dashboard" class="tab active">
+        <div class="glass p-5 md:p-8 text-center mb-5 relative overflow-hidden">
+          <div class="absolute inset-0 opacity-[0.03]" style="background-image:radial-gradient(var(--primary) 1px, transparent 1px); background-size:20px 20px;"></div>
+          <h2 class="text-xl md:text-3xl font-bold neon relative">"इतना दर्द काफी है या और चाहिए आखिरी अवसर है सुधार जा"</h2>
+          <p class="mt-2 opacity-80 relative">Mission Active - No Excuses, Only Execution</p>
+          <div class="mt-4 flex justify-center gap-3 flex-wrap">
+            <span class="px-3 py-1 rounded-full text-xs glass">OSCP 2026</span>
+            <span class="px-3 py-1 rounded-full text-xs glass">Daily 4 Labs</span>
+            <span class="px-3 py-1 rounded-full text-xs glass">₹40K Bank</span>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
+          <div class="glass p-5 text-center hover:scale-[1.02] transition">
+            <div class="text-3xl mb-1">🏆</div>
+            <div class="text-2xl font-bold neon" id="dash-certs">6</div>
+            <div class="text-sm opacity-80">Certifications</div>
+            <div class="text-xs mt-1 opacity-60">BCA → OSCP</div>
+          </div>
+          <div class="glass p-5 text-center hover:scale-[1.02] transition">
+            <div class="text-3xl mb-1">📚</div>
+            <div class="text-2xl font-bold neon" id="dash-books">5</div>
+            <div class="text-sm opacity-80">Books Active</div>
+            <div class="text-xs mt-1 opacity-60">Mindset War</div>
+          </div>
+          <div class="glass p-5 text-center hover:scale-[1.02] transition">
+            <div class="text-3xl mb-1">🧪</div>
+            <div class="text-2xl font-bold neon" id="dash-labs">0</div>
+            <div class="text-sm opacity-80">Labs Today</div>
+            <div class="text-xs mt-1 opacity-60">Target: 4</div>
+          </div>
+          <div class="glass p-5 text-center hover:scale-[1.02] transition">
+            <div class="text-3xl mb-1">💸</div>
+            <div class="text-2xl font-bold neon" id="dash-bank">₹0</div>
+            <div class="text-sm opacity-80">Bank Balance</div>
+            <div class="text-xs mt-1 opacity-60">Target: ₹40K</div>
+          </div>
+        </div>
+        <div class="grid md:grid-cols-3 gap-4 mt-5">
+          <div class="glass p-4">
+            <h3 class="font-bold mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> आज का युद्ध</h3>
+            <ul class="text-sm space-y-2 opacity-90" id="today-war">
+              <li class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 accent-[var(--primary)]"> <span>5:40-6:10 Hacking book</span></li>
+              <li class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 accent-[var(--primary)]"> <span>4 Lab solve minimum</span></li>
+              <li class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 accent-[var(--primary)]"> <span>Bug Hunting 1 घंटा</span></li>
+              <li class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 accent-[var(--primary)]"> <span>BCA Notes complete</span></li>
+            </ul>
+          </div>
+          <div class="glass p-4">
+            <h3 class="font-bold mb-3">System Status</h3>
+            <div class="space-y-3 text-sm">
+              <div><div class="flex justify-between mb-1"><span>Focus</span><span class="text-green-400 font-mono">98%</span></div><div class="w-full h-1.5 bg-black/40 rounded"><div class="h-full w-[98%] rounded" style="background:var(--primary); box-shadow:0 0 8px var(--glow)"></div></div></div>
+              <div><div class="flex justify-between mb-1"><span>Discipline</span><span class="text-green-400 font-mono">100%</span></div><div class="w-full h-1.5 bg-black/40 rounded"><div class="h-full w-full rounded" style="background:var(--primary); box-shadow:0 0 8px var(--glow)"></div></div></div>
+              <div class="flex justify-between mt-3 pt-2 border-t border-[var(--border)]"><span>XP Level</span><span id="xp-mini" class="text-yellow-400 font-bold font-mono">Lv.3 - 1240</span></div>
+            </div>
+          </div>
+          <div class="glass p-4">
+            <h3 class="font-bold mb-2">मंत्र</h3>
+            <p class="text-sm leading-relaxed opacity-90">रोज दर्द सहो, रोज सीखो, रोज कमाओ। OSCP तक रुकना नहीं। हर लैब एक युद्ध, हर बग एक खजाना। घर की जिम्मेदारी तेरे कंधे पर है।</p>
+            <button class="btn mt-3 w-full" onclick="document.querySelector('[data-tab=warroom]').click()">⚔️ WAR शुरू करो</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="certs" class="tab">
+        <h2 class="text-2xl font-bold neon mb-4">🏆 CERTIFICATION ROADMAP</h2>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4" id="certs-grid"></div>
+        <div class="mt-6 glass p-4">
+          <h3 class="font-bold mb-3">Progress Path: BCA → OSCP</h3>
+          <div class="flex items-center gap-2 overflow-x-auto pb-2">
+            <div class="road-node">BCA</div><div class="road-line"></div>
+            <div class="road-node">CCNA</div><div class="road-line"></div>
+            <div class="road-node">Sec+</div><div class="road-line"></div>
+            <div class="road-node">eJPT</div><div class="road-line"></div>
+            <div class="road-node">PNPT</div><div class="road-line"></div>
+            <div class="road-node" style="background:var(--accent);color:black">OSCP</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="books" class="tab">
+        <h2 class="text-2xl font-bold neon mb-4">📚 BOOKS & MINDSET WAR</h2>
+        <div class="grid md:grid-cols-2 gap-4" id="books-grid"></div>
+      </section>
+
+      <section id="labs" class="tab">
+        <h2 class="text-2xl font-bold neon mb-4">🧪 DAILY LABS COMMAND CENTER</h2>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4" id="labs-grid"></div>
+        <div class="glass p-5 mt-5 text-center">
+          <div class="text-5xl font-bold neon mb-2" id="labs-today-count">0</div>
+          <div class="opacity-80">आज के Labs (Target: 4)</div>
+          <div class="w-full h-2 bg-black/40 rounded mt-3"><div id="labs-progress" class="h-full bg-[var(--primary)] rounded transition-all" style="width:0%; box-shadow:0 0 10px var(--glow)"></div></div>
+        </div>
+      </section>
+
+      <section id="mission" class="tab">
+        <h2 class="text-2xl font-bold neon mb-4">💻 COMPUTER MISSION - अपना हथियार बनाओ</h2>
+        <div class="grid lg:grid-cols-3 gap-5">
+          <div class="lg:col-span-2 glass p-5">
+            <h3 class="font-bold mb-3">Parts List (Target: ₹70,000)</h3>
+            <div class="space-y-2 text-sm" id="pc-parts"></div>
+          </div>
+          <div class="glass p-5">
+            <h3 class="font-bold mb-3">Savings</h3>
+            <div class="text-3xl font-bold neon mb-2" id="pc-saved">₹0</div>
+            <div class="w-full h-3 bg-black/40 rounded mb-3"><div id="pc-bar" class="h-full rounded transition-all" style="width:0%; background:var(--accent); box-shadow:0 0 10px var(--glow)"></div></div>
+            <div class="flex gap-2">
+              <input type="number" id="pc-add" placeholder="+ ₹ जोड़ो" class="flex-1">
+              <button class="btn" id="pc-add-btn">Add</button>
+            </div>
+            <p class="text-xs opacity-70 mt-3">Bug Bounty और Freelance से हर रुपया यहाँ।</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="finance" class="tab">
+        <h2 class="text-2xl font-bold neon mb-4">💰 जिम्मेदारी & FINANCE CONTROL</h2>
+        <div class="grid md:grid-cols-2 gap-5">
+          <div class="glass p-5">
+            <h3 class="font-bold mb-3">Bank Minimum Target</h3>
+            <div class="flex items-end gap-3 mb-3">
+              <div class="text-4xl font-bold neon">₹40,000</div>
+              <div class="text-sm opacity-70">never below</div>
+            </div>
+            <label class="text-xs opacity-70">Current Balance</label>
+            <div class="flex gap-2 mt-1">
+              <input type="number" id="bank-balance" placeholder="₹">
+              <button class="btn" id="bank-save">Save</button>
+            </div>
+            <div id="bank-status" class="mt-3 text-sm font-bold"></div>
+          </div>
+          <div class="glass p-5">
+            <h3 class="font-bold mb-3">Monthly Hustle</h3>
+            <div class="grid grid-cols-2 gap-3 text-center">
+              <div class="p-3 rounded-lg bg-black/30"><div class="text-xs opacity-70">Income</div><div class="text-xl font-bold text-green-400" id="fin-income">₹0</div></div>
+              <div class="p-3 rounded-lg bg-black/30"><div class="text-xs opacity-70">Expenses</div><div class="text-xl font-bold text-red-400" id="fin-expense">₹0</div></div>
+            </div>
+            <div class="flex gap-2 mt-3">
+              <input type="text" id="fin-desc" placeholder="काम / खर्च">
+              <input type="number" id="fin-amt" placeholder="₹" class="w-28">
+              <select id="fin-type" class="w-24"><option value="in">+</option><option value="out">-</option></select>
+              <button class="btn" id="fin-add">Add</button>
+            </div>
+            <div class="mt-3 max-h-32 overflow-y-auto text-xs space-y-1" id="fin-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="timetable" class="tab">
+        <h2 class="text-2xl font-bold neon mb-4">⏰ DAILY TIME TABLE - सैनिक Routine</h2>
+        <div class="grid md:grid-cols-2 gap-4" id="timetable-grid"></div>
+      </section>
+
+      <section id="notes" class="tab">
+        <h2 class="text-2xl font-bold neon mb-4">📝 PERSONAL WAR NOTES</h2>
+        <div class="glass p-4">
+          <textarea id="personal-notes" rows="14" placeholder="आज क्या सीखा? कौन सी lab फोड़ी? क्या दर्द हुआ? लिखो... कल यही तुम्हें बचाएगा।" class="w-full bg-transparent border-0 focus:ring-0 p-0 resize-none" style="font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.6"></textarea>
+          <div class="flex justify-between items-center mt-3 pt-3 border-t border-[var(--border)]">
+            <span class="text-xs opacity-60">Auto-saved locally</span>
+            <button class="btn" id="notes-clear">Clear All</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="experiment" class="tab">
+        <h2 class="text-2xl font-bold neon mb-4">🔬 EXPERIMENT LOG</h2>
+        <div class="glass p-4 mb-4">
+          <div class="grid md:grid-cols-4 gap-2">
+            <input id="exp-title" placeholder="Experiment (e.g., XSS Bypass)">
+            <input id="exp-tool" placeholder="Tool (Burp, Nmap)">
+            <select id="exp-result"><option>Success</option><option>Failed</option><option>Learning</option></select>
+            <button class="btn" id="exp-add">Log</button>
+          </div>
+          <textarea id="exp-note" placeholder="क्या हुआ? क्या सीखा?" rows="2" class="mt-2"></textarea>
+        </div>
+        <div class="space-y-2" id="exp-list"></div>
+      </section>
+
+      <section id="warroom" class="tab">
+        <div class="flex flex-col lg:flex-row gap-5">
+          <div class="flex-1">
+            <h2 class="text-2xl font-bold neon mb-1">⚔️ STUDY-BATTLE-WAR-ROOM</h2>
+            <p class="opacity-70 text-sm mb-4">Territory capture करो, दिमाग से लड़ो। हर capture = +50 XP</p>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="war-territories"></div>
+            <div class="glass p-4 mt-4">
+              <div class="flex justify-between items-center">
+                <div><span class="text-xs opacity-70">Territories</span><div class="text-2xl font-bold" id="war-owned">0/6</div></div>
+                <div><span class="text-xs opacity-70">War XP</span><div class="text-2xl font-bold text-yellow-400" id="war-xp">0</div></div>
+                <button class="btn" id="war-reset">Reset War</button>
+              </div>
+            </div>
+          </div>
+          <div class="lg:w-[300px] glass p-4 h-fit">
+            <h3 class="font-bold mb-2">Power-Ups</h3>
+            <div class="space-y-2">
+              <button class="btn w-full text-left power-btn" data-power="focus">🎯 FOCUS MODE (+10XP)</button>
+              <button class="btn w-full text-left power-btn" data-power="bomb">💣 KNOWLEDGE BOMB</button>
+              <button class="btn w-full text-left power-btn" data-power="shield">🛡️ SHIELD (skip)</button>
+            </div>
+            <div class="mt-4 pt-4 border-t border-[var(--border)] text-xs opacity-70">
+              <p>• गलत जवाब = -10 HP<br>• 0 HP = Downed 30s<br>• सब capture = WARLORD</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="testmode" class="tab">
+        <h2 class="text-2xl font-bold neon mb-4">🧠 STUDY-TEST-MODE - OSCP Prep</h2>
+        <div class="glass p-6 max-w-3xl mx-auto">
+          <div id="quiz-container">
+            <div class="flex justify-between mb-4 text-sm">
+              <span id="quiz-progress" class="font-mono">Q 1/10</span>
+              <span id="quiz-score" class="font-bold">Score: 0</span>
+            </div>
+            <h3 id="quiz-question" class="text-lg md:text-xl font-bold mb-5 min-h-[60px]"></h3>
+            <div id="quiz-options" class="space-y-2.5"></div>
+            <div class="flex justify-between mt-6">
+              <button id="quiz-skip" class="btn opacity-70">Skip</button>
+              <button id="quiz-next" class="btn hidden">Next →</button>
+            </div>
+          </div>
+          <div id="quiz-result" class="hidden text-center py-8">
+            <div class="text-5xl mb-3">🎉</div>
+            <h3 class="text-2xl font-bold neon mb-2">Test Complete!</h3>
+            <p class="text-xl mb-4" id="quiz-final"></p>
+            <button class="btn" onclick="startQuiz()">फिर से लड़ो</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- EXAM BATTLE MODAL -->
+<div id="exam-modal" class="fixed inset-0 bg-black/95 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-md">
+  <div class="glass w-full max-w-2xl p-6 relative">
+    <button id="exam-close" class="absolute top-3 right-3 btn px-2 py-1">✕</button>
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold neon">🎯 EXAM BATTLE WAR</h2>
+      <div class="flex gap-4 font-mono">
+        <div>Time: <span id="exam-time" class="text-yellow-400">60</span>s</div>
+        <div>Score: <span id="exam-score" class="text-green-400">0</span></div>
+      </div>
+    </div>
+    <div id="exam-q" class="text-lg font-bold min-h-[80px] flex items-center"></div>
+    <div id="exam-opts" class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4"></div>
+    <div class="mt-4 text-center text-xs opacity-60">हर सही जवाब +20 XP • गलत -5 • राधे राधे बोलके फोड़ दो</div>
+  </div>
+</div>
+
+<!-- Question Drop Container -->
+<div id="question-holder" class="fixed inset-0 pointer-events-none z-50"></div>
+
+<script>
+// ===== CORE =====
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const flash = () => { const f=$('#flash'); f.style.opacity='0.7'; setTimeout(()=>f.style.opacity='0',100); };
+
+// Themes
+$$('.theme-btn').forEach(b=>b.onclick=()=>{
+  document.body.setAttribute('data-theme', b.dataset.theme);
+  localStorage.setItem('ct-theme', b.dataset.theme);
+  $$('.theme-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+  flash();
+});
+const savedTheme = localStorage.getItem('ct-theme')||'raktabeej';
+document.body.setAttribute('data-theme', savedTheme);
+$(`.theme-btn[data-theme="${savedTheme}"]`)?.classList.add('active');
+
+// Nav
+$$('.nav-btn').forEach(btn=>{
+  btn.onclick=()=>{
+    $$('.nav-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    $$('.tab').forEach(t=>t.classList.remove('active'));
+    $('#'+btn.dataset.tab)?.classList.add('active');
+    flash();
+  }
+});
+
+// Clock
+function tick(){
+  const d=new Date();
+  const t=d.toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata',hour12:false});
+  $('#clock').textContent=t+' IST';
+  $('#clock-mob').textContent=t;
+}
+setInterval(tick,1000); tick();
+
+// Blood
+const bd=$('#blood-drips');
+for(let i=0;i<28;i++){const d=document.createElement('div');d.className='drop';d.style.left=Math.random()*100+'%';d.style.animationDuration=(3+Math.random()*4)+'s';d.style.animationDelay=Math.random()*5+'s';d.style.height=(18+Math.random()*20)+'px';bd.appendChild(d)}
+
+// BG Canvas
+const c=$('#bg-canvas'),x=c.getContext('2d');
+function resize(){c.width=innerWidth;c.height=innerHeight} resize(); addEventListener('resize',resize);
+let pts=[]; for(let i=0;i<90;i++)pts.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,vx:(Math.random()-0.5)*0.4,vy:(Math.random()-0.5)*0.4});
+function draw(){x.clearRect(0,0,c.width,c.height);const col=getComputedStyle(document.body).getPropertyValue('--primary').trim();pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>c.width)p.vx*=-1;if(p.y<0||p.y>c.height)p.vy*=-1;x.fillStyle=col+'40';x.beginPath();x.arc(p.x,p.y,1.4,0,7);x.fill();});pts.forEach((a,i)=>{pts.slice(i+1).forEach(b=>{const d=Math.hypot(a.x-b.x,a.y-b.y);if(d<110){x.strokeStyle=col+Math.floor(30*(1-d/110)).toString(16).padStart(2,'0');x.lineWidth=0.5;x.beginPath();x.moveTo(a.x,a.y);x.lineTo(b.x,b.y);x.stroke()}})});requestAnimationFrame(draw)} draw();
+
+// XP System
+let xp = parseInt(localStorage.getItem('ct-xp')||'1240');
+function updateXP(delta){ xp=Math.max(0,xp+delta); localStorage.setItem('ct-xp',xp); const lvl=Math.floor(xp/500)+1; $('#xp-mini').textContent=`Lv.${lvl} - ${xp}`; $('#war-xp')&&( $('#war-xp').textContent = localStorage.getItem('ct-warxp')||'0' ); }
+updateXP(0);
+
+// ===== DASHBOARD SYNC =====
+function syncDash(){
+  $('#dash-labs').textContent = localStorage.getItem('ct-labs-today')||'0';
+  $('#labs-today-count').textContent = localStorage.getItem('ct-labs-today')||'0';
+  $('#labs-progress').style.width = Math.min(100,(parseInt(localStorage.getItem('ct-labs-today')||'0')/4)*100)+'%';
+  $('#dash-bank').textContent = '₹'+(parseInt(localStorage.getItem('ct-bank')||'0').toLocaleString('en-IN'));
+  $('#bank-balance').value = localStorage.getItem('ct-bank')||'';
+  updateBankStatus();
+}
+function updateBankStatus(){ const b=parseInt(localStorage.getItem('ct-bank')||'0'); const el=$('#bank-status'); if(!b){el.textContent='';return} el.textContent = b>=40000 ? '✅ Target Safe' : `⚠️ Need ₹${(40000-b).toLocaleString('en-IN')} more`; el.style.color = b>=40000 ? '#00ff88' : '#ff4444'; }
+$('#bank-save')?.addEventListener('click',()=>{ localStorage.setItem('ct-bank',$('#bank-balance').value||'0'); syncDash(); flash(); });
+syncDash();
+
+// ===== CERTS =====
+const certs=[
+  {id:'bca',n:'BCA',d:'Currently Pursuing - Foundation strong करो',p:65,t:'2025'},
+  {id:'ccna',n:'CCNA',d:'Networking base - must for hacking',p:20,t:'Early 2026'},
+  {id:'secplus',n:'CompTIA Security+',d:'Theory + HR filter clear',p:10,t:'2026'},
+  {id:'ejpt',n:'eJPT',d:'First practical cert - INE',p:5,t:'2026'},
+  {id:'pnpt',n:'PNPT - TCM',d:'AD + Reporting skill',p:0,t:'2026-27'},
+  {id:'oscp',n:'OSCP - FINAL BOSS',d:'24hr exam - तुम्हारी किस्मत',p:0,t:'2027 Target'},
+];
+const cg=$('#certs-grid'); certs.forEach(c=>{ const v=localStorage.getItem('cert-'+c.id)||c.p; const div=document.createElement('div'); div.className='glass p-4'; div.innerHTML=`<div class="flex justify-between items-start mb-2"><h3 class="font-bold text-lg">${c.n}</h3><span class="text-xs px-2 py-0.5 rounded bg-black/40">${c.t}</span></div><p class="text-sm opacity-80 mb-3">${c.d}</p><div class="flex items-center gap-3"><div class="flex-1 h-2 bg-black/40 rounded overflow-hidden"><div class="h-full transition-all" style="width:${v}%; background:var(--primary); box-shadow:0 0 8px var(--glow)"></div></div><span class="text-xs font-mono w-10 text-right">${v}%</span></div><input type="range" min="0" max="100" value="${v}" class="w-full mt-3 accent-[var(--primary)] cert-range" data-id="${c.id}">`; cg.appendChild(div); });
+$$('.cert-range').forEach(r=>r.oninput=e=>{localStorage.setItem('cert-'+e.target.dataset.id, e.target.value); e.target.previousElementSibling.firstElementChild.firstElementChild.style.width=e.target.value+'%'; e.target.previousElementSibling.lastElementChild.textContent=e.target.value+'%'; updateXP(1);});
+
+// ===== BOOKS =====
+const books=[
+  {t:'Hacking: The Art of Exploitation',a:'Jon Erickson',p:30,why:'Buffer overflow, C basics'},
+  {t:'RTFM - Red Team Field Manual',a:'Ben Clark',p:50,why:'Command bible'},
+  {t:'Web Application Hacker\'s Handbook',a:'PortSwigger',p:20,why:'Bug bounty base'},
+  {t:'Atomic Habits',a:'James Clear',p:80,why:'Discipline > Motivation'},
+  {t:'Deep Work',a:'Cal Newport',p:60,why:'4hr focus daily'},
+];
+const bg=$('#books-grid'); books.forEach((b,i)=>{const p=localStorage.getItem('book-'+i)||b.p; const d=document.createElement('div'); d.className='glass p-4'; d.innerHTML=`<h3 class="font-bold">${b.t}</h3><p class="text-xs opacity-70 mb-2">${b.a} • ${b.why}</p><div class="flex items-center gap-2"><div class="flex-1 h-1.5 bg-black/40 rounded"><div class="h-full bg-[var(--accent)] transition-all" style="width:${p}%"></div></div><span class="text-xs font-mono">${p}%</span></div><input type="range" min="0" max="100" value="${p}" data-i="${i}" class="w-full mt-2 accent-[var(--accent)] book-range">`; bg.appendChild(d);});
+$$('.book-range').forEach(r=>r.oninput=e=>{localStorage.setItem('book-'+e.target.dataset.i, e.target.value); e.target.previousElementSibling.firstElementChild.firstElementChild.style.width=e.target.value+'%'; e.target.previousElementSibling.lastElementChild.textContent=e.target.value+'%';});
+
+// ===== LABS =====
+const labs=[{id:'thm',n:'TryHackMe',i:'🎯',c:'#00ff88'},{id:'htb',n:'HackTheBox',i:'📦',c:'#9fef00'},{id:'ps',n:'PortSwigger',i:'🕷️',c:'#ff6600'},{id:'vh',n:'VulnHub',i:'💀',c:'#ff1a1a'}];
+const lg=$('#labs-grid'); labs.forEach(l=>{const cnt=parseInt(localStorage.getItem('lab-'+l.id)||'0'); const d=document.createElement('div'); d.className='glass p-4 text-center'; d.innerHTML=`<div class="text-3xl mb-1">${l.i}</div><div class="font-bold">${l.n}</div><div class="text-2xl font-mono my-2" style="color:${l.c}" id="lab-${l.id}">${cnt}</div><div class="flex gap-2 justify-center"><button class="btn px-3 py-1" onclick="addLab('${l.id}',1)">+1</button><button class="btn px-3 py-1 opacity-60" onclick="addLab('${l.id}',-1)">-1</button></div>`; lg.appendChild(d);});
+function addLab(id,d){ const el=$('#lab-'+id); let v=parseInt(el.textContent)+d; if(v<0)v=0; el.textContent=v; localStorage.setItem('lab-'+id,v); let t=parseInt(localStorage.getItem('ct-labs-today')||'0')+d; if(t<0)t=0; localStorage.setItem('ct-labs-today',t); syncDash(); updateXP(d>0?10:-5); flash(); if(d>0) addKill(`LAB SOLVED: ${id.toUpperCase()}`); }
+
+// ===== PC MISSION =====
+const parts=[{n:'Ryzen 5 5600',p:12000},{n:'B550 Motherboard',p:9000},{n:'16GB DDR4',p:4500},{n:'RTX 3060 / Used',p:22000},{n:'512GB NVMe',p:3500},{n:'PSU 650W',p:5000},{n:'Cabinet + Cooling',p:4000},{n:'Monitor 24"',p:9000}];
+const pc=$('#pc-parts'); let total=0; parts.forEach(pt=>{ total+=pt.p; const d=document.createElement('div'); d.className='flex justify-between py-1.5 border-b border-[var(--border)]/30'; d.innerHTML=`<label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="pc-check accent-[var(--primary)]" data-price="${pt.p}"> <span>${pt.n}</span></label><span class="font-mono text-sm">₹${pt.p.toLocaleString('en-IN')}</span>`; pc.appendChild(d);});
+pc.innerHTML+=`<div class="flex justify-between font-bold pt-2"><span>Total</span><span>₹${total.toLocaleString('en-IN')}</span></div>`;
+function updPC(){ const s=parseInt(localStorage.getItem('pc-saved')||'0'); $('#pc-saved').textContent='₹'+s.toLocaleString('en-IN'); $('#pc-bar').style.width=Math.min(100,(s/70000)*100)+'%'; }
+$('#pc-add-btn').onclick=()=>{ const v=parseInt($('#pc-add').value||'0'); if(!v)return; const ns=(parseInt(localStorage.getItem('pc-saved')||'0')+v); localStorage.setItem('pc-saved',ns); $('#pc-add').value=''; updPC(); updateXP(Math.floor(v/1000)); flash(); }; updPC();
+$$('.pc-check').forEach(ch=>{ const id='pc-'+ch.dataset.price; ch.checked=localStorage.getItem(id)==='1'; ch.onchange=()=>localStorage.setItem(id, ch.checked?'1':'0'); });
+
+// ===== FINANCE =====
+function renderFin(){ const tx=JSON.parse(localStorage.getItem('ct-tx')||'[]'); let inc=0,exp=0; $('#fin-list').innerHTML=tx.slice(-8).reverse().map(t=>{ if(t.t==='in')inc+=t.a; else exp+=t.a; return `<div class="flex justify-between"><span class="opacity-80">${t.d}</span><span style="color:${t.t==='in'?'#00ff88':'#ff4444'}">${t.t==='in'?'+':'-'}₹${t.a}</span></div>`; }).join(''); $('#fin-income').textContent='₹'+inc.toLocaleString('en-IN'); $('#fin-expense').textContent='₹'+exp.toLocaleString('en-IN'); }
+$('#fin-add').onclick=()=>{ const d=$('#fin-desc').value, a=parseInt($('#fin-amt').value), t=$('#fin-type').value; if(!d||!a)return; const tx=JSON.parse(localStorage.getItem('ct-tx')||'[]'); tx.push({d,a,t,ts:Date.now()}); localStorage.setItem('ct-tx',JSON.stringify(tx)); $('#fin-desc').value=''; $('#fin-amt').value=''; renderFin(); updateXP(t==='in'?5:0); flash(); }; renderFin();
+
+// ===== TIMETABLE =====
+const tt=[
+ {t:'05:00',a:'उठो • पानी • राधे राधे'},
+ {t:'05:40-06:10',a:'Hacking Book - 30min (daily)'},
+ {t:'06:15-07:45',a:'BCA Study / Notes'},
+ {t:'08:00-09:00',a:'Lab 1 - TryHackMe'},
+ {t:'09:00-13:00',a:'College / Skills'},
+ {t:'14:00-15:30',a:'Lab 2 + 3'},
+ {t:'16:00-17:00',a:'BUG HUNTING - 1 घंटा'},
+ {t:'17:30-18:30',a:'Lab 4 + Writeup'},
+ {t:'19:30-20:30',a:'Freelance / Income work'},
+ {t:'21:00-22:00',a:'Revision + कल का plan'},
+ {t:'22:00',a:'Sleep - 7hr must'},
+];
+const tg=$('#timetable-grid'); tt.forEach((s,i)=>{ const done=localStorage.getItem('tt-'+i)==='1'; const d=document.createElement('div'); d.className='timeline-block'+(done?' done':''); d.innerHTML=`<div class="flex justify-between"><span class="font-mono text-[var(--accent)] font-bold">${s.t}</span><span class="text-xs opacity-60">${done?'✓':''}</span></div><div class="text-sm mt-1">${s.a}</div>`; d.onclick=()=>{ const nd=!d.classList.contains('done'); d.classList.toggle('done',nd); localStorage.setItem('tt-'+i, nd?'1':'0'); if(nd) updateXP(3); }; tg.appendChild(d); });
+
+// ===== NOTES =====
+const notesEl=$('#personal-notes'); notesEl.value=localStorage.getItem('ct-notes')||''; notesEl.oninput=()=>localStorage.setItem('ct-notes', notesEl.value);
+$('#notes-clear').onclick=()=>{ if(confirm('सब delete?')){localStorage.removeItem('ct-notes'); notesEl.value='';} };
+
+// ===== EXPERIMENT =====
+function renderExp(){ const ex=JSON.parse(localStorage.getItem('ct-exp')||'[]'); $('#exp-list').innerHTML=ex.map(e=>`<div class="glass p-3 flex justify-between items-start"><div><div class="font-bold text-sm">${e.t} <span class="text-xs opacity-60">• ${e.tool}</span></div><div class="text-xs opacity-80 mt-1">${e.n}</div></div><span class="text-[10px] px-2 py-0.5 rounded-full" style="background:${e.r==='Success'?'#00ff8830':'#ff444430'}; color:${e.r==='Success'?'#00ff88':'#ff8888'}; border:1px solid ${e.r==='Success'?'#00ff88':'#ff4444'}">${e.r}</span></div>`).join(''); }
+$('#exp-add').onclick=()=>{ const t=$('#exp-title').value, tool=$('#exp-tool').value, r=$('#exp-result').value, n=$('#exp-note').value; if(!t)return; const ex=JSON.parse(localStorage.getItem('ct-exp')||'[]'); ex.unshift({t,tool,r,n,ts:Date.now()}); localStorage.setItem('ct-exp',JSON.stringify(ex.slice(0,50))); $('#exp-title').value='';$('#exp-tool').value='';$('#exp-note').value=''; renderExp(); updateXP(5); flash(); }; renderExp();
+
+// ===== WAR ROOM =====
+const territories=[{id:'net',n:'NETWORK',i:'🌐',q:'HTTPS का default port?',a:'443'},{id:'web',n:'WEB APPS',i:'🕸️',q:'XSS का पूरा नाम?',a:'cross site scripting'},{id:'linux',n:'LINUX',i:'🐧',q:'लिनक्स में root का UID?',a:'0'},{id:'crypto',n:'CRYPTO',i:'🔐',q:'MD5 कितने bits?',a:'128'},{id:'osint',n:'OSINT',i:'👁️',q:'Google dork for site?',a:'site:'},{id:'win',n:'WINDOWS AD',i:'🏢',q:'AD का default port LDAP?',a:'389'}];
+const wt=$('#war-territories'); let warXP=parseInt(localStorage.getItem('ct-warxp')||'0'); let owned=JSON.parse(localStorage.getItem('ct-owned')||'[]');
+function renderWar(){ wt.innerHTML=''; territories.forEach(t=>{ const isO=owned.includes(t.id); const d=document.createElement('div'); d.className='war-territory glass p-5 text-center'+(isO?' owned':''); d.innerHTML=`<div class="text-3xl mb-1">${t.i}</div><div class="font-bold text-sm">${t.n}</div><div class="text-[10px] opacity-60 mt1">${isO?'CAPTURED':'LOCKED'}</div>`; d.onclick=()=>attackTerritory(t,d); wt.appendChild(d); }); $('#war-owned').textContent=owned.length+'/6'; $('#war-xp').textContent=warXP; }
+function attackTerritory(t,el){ if(owned.includes(t.id)) return addKill(`Already owned: ${t.n}`); const qh=$('#question-holder'); qh.innerHTML=''; const qd=document.createElement('div'); qd.className='question-drop pointer-events-auto'; qd.innerHTML=`<div class="text-xs opacity-70 mb1">${t.i} ${t.n}</div><div class="font-bold mb3">${t.q}</div><input id="war-ans" placeholder="जवाब लिखो..." class="mb2" autofocus><div class="flex gap2"><button class="btn flex-1" id="war-submit">Attack</button><button class="btn opacity-60" onclick="this.closest('.question-drop').remove()">Cancel</button></div>`; qh.appendChild(qd); $('#war-ans').focus(); $('#war-submit').onclick=()=>{ const ans=$('#war-ans').value.toLowerCase().trim(); if(ans===t.a.toLowerCase()){ owned.push(t.id); localStorage.setItem('ct-owned',JSON.stringify(owned)); warXP+=50; localStorage.setItem('ct-warxp',warXP); updateXP(50); qd.remove(); el.classList.add('owned','shake'); setTimeout(()=>el.classList.remove('shake'),600); addKill(`TERRITORY CAPTURED: ${t.n} +50XP`); renderWar(); flash(); if(owned.length===6){ setTimeout(()=>{ addKill('🏆 WARLORD ACHIEVED!'); alert('🔥 सारे territory capture! तू WARLORD है अब!'); },500);} }else{ warXP=Math.max(0,warXP-10); localStorage.setItem('ct-warxp',warXP); updateXP(-10); addKill(`FAILED ATTACK: ${t.n} -10XP`); qd.style.borderColor='#ff0000'; qd.classList.add('shake'); setTimeout(()=>qd.remove(),1200); } }; }
+$('#war-reset').onclick=()=>{ if(confirm('War reset?')){ owned=[]; warXP=0; localStorage.removeItem('ct-owned'); localStorage.setItem('ct-warxp','0'); renderWar(); updateXP(0); } };
+$$('.power-btn').forEach(b=>b.onclick=()=>{ const p=b.dataset.power; if(p==='focus'){ updateXP(10); warXP+=10; localStorage.setItem('ct-warxp',warXP); addKill('POWER: FOCUS MODE +10XP'); $('#war-xp').textContent=warXP; flash(); } if(p==='bomb'){ if(owned.length<6){ const t=territories.find(x=>!owned.includes(x.id)); if(t) attackTerritory(t,{}); } } if(p==='shield'){ addKill('POWER: SHIELD active 30s'); } });
+renderWar();
+
+// Kill feed
+function addKill(txt){ const kf=$('#killFeed'); const d=document.createElement('div'); d.className='kill-item'; d.textContent=`[${new Date().toLocaleTimeString('en-IN',{hour12:false})}] ${txt}`; kf.prepend(d); setTimeout(()=>d.remove(),5000); }
+
+// ===== TEST MODE =====
+const quizBank=[
+ {q:'Nmap में SYN scan flag?',o:['-sS','-sT','-sU','-A'],a:0},
+ {q:'SQL Injection को रोकने का best तरीका?',o:['Blacklist','Prepared Statements','MD5','CAPTCHA'],a:1},
+ {q:'Linux में current directory देखने की command?',o:['ls','pwd','cd','whoami'],a:1},
+ {q:'Burp Suite किसके लिए?',o:['Network scan','Web proxy','Password crack','OS install'],a:1},
+ {q:'/etc/passwd में क्या होता है?',o:['Passwords','User info','Logs','Binaries'],a:1},
+ {q:'HTTPS port?',o:['80','21','443','22'],a:2},
+ {q:'XSS का impact?',o:['DoS','Code execution in browser','SQL dump','WiFi hack'],a:1},
+ {q:'OSCP exam duration?',o:['12hr','24hr','48hr','8hr'],a:1},
+ {q:'Hydra tool use?',o:['Port scan','Brute force','Sniffing','Virus'],a:1},
+ {q:'समर्पण से बड़ी कोई?',o:['Skill','ताकत नहीं','किस्मत','पैसा'],a:1},
+];
+let qIndex=0, qScore=0;
+function startQuiz(){ qIndex=0; qScore=0; $('#quiz-result').classList.add('hidden'); $('#quiz-container').classList.remove('hidden'); showQ(); }
+function showQ(){ const qq=quizBank[qIndex]; $('#quiz-progress').textContent=`Q ${qIndex+1}/${quizBank.length}`; $('#quiz-question').textContent=qq.q; $('#quiz-options').innerHTML=qq.o.map((o,i)=>`<button class="w-full text-left p-3 rounded-lg glass hover:border-[var(--primary)] transition quiz-opt" data-i="${i}">${String.fromCharCode(65+i)}. ${o}</button>`).join(''); $('#quiz-next').classList.add('hidden'); $$('.quiz-opt').forEach(b=>b.onclick=(e)=>selectAns(e,qq)); $('#quiz-score').textContent=`Score: ${qScore}`; }
+function selectAns(e,qq){ $$('.quiz-opt').forEach(b=>b.disabled=true); const sel=parseInt(e.currentTarget.dataset.i); const correct=sel===qq.a; e.currentTarget.style.borderColor=correct?'#00ff88':'#ff4444'; e.currentTarget.style.background=correct?'#00ff8820':'#ff444420'; if(correct){ qScore+=10; updateXP(5); addKill('QUIZ CORRECT +5XP'); } else { $$('.quiz-opt')[qq.a].style.borderColor='#00ff88'; } $('#quiz-next').classList.remove('hidden'); }
+$('#quiz-next').onclick=()=>{ qIndex++; if(qIndex<quizBank.length) showQ(); else endQuiz(); };
+$('#quiz-skip').onclick=()=>{ qIndex++; if(qIndex<quizBank.length) showQ(); else endQuiz(); };
+function endQuiz(){ $('#quiz-container').classList.add('hidden'); $('#quiz-result').classList.remove('hidden'); $('#quiz-final').textContent=`${qScore}/${quizBank.length*10} - ${qScore>=70?'OSCP Ready 🔥':'और मेहनत कर'}`; updateXP(Math.floor(qScore/2)); }
+startQuiz();
+
+// ===== EXAM BATTLE =====
+const examModal=$('#exam-modal');
+$('#exam-battle-btn').onclick=()=>{ examModal.classList.remove('hidden'); startExam(); };
+$('#exam-close').onclick=()=>examModal.classList.add('hidden');
+let examTimer, examTime=60, examScore=0;
+function startExam(){ examTime=60; examScore=0; $('#exam-score').textContent='0'; $('#exam-time').textContent='60'; nextExamQ(); clearInterval(examTimer); examTimer=setInterval(()=>{ examTime--; $('#exam-time').textContent=examTime; if(examTime<=0){ clearInterval(examTimer); endExam(); } },1000); }
+function nextExamQ(){ const q=quizBank[Math.floor(Math.random()*quizBank.length)]; $('#exam-q').textContent=q.q; $('#exam-opts').innerHTML=q.o.map((o,i)=>`<button class="btn text-left" data-i="${i}">${o}</button>`).join(''); $$('#exam-opts button').forEach(b=>b.onclick=()=>{ if(parseInt(b.dataset.i)===q.a){ examScore+=20; updateXP(20); addKill('EXAM +20XP'); flash(); } else { examScore=Math.max(0,examScore-5); updateXP(-2); } $('#exam-score').textContent=examScore; nextExamQ(); }); }
+function endExam(){ $('#exam-q').textContent=`⏰ Time Up! Final Score: ${examScore}`; $('#exam-opts').innerHTML=`<button class="btn col-span-2" onclick="startExam()">फिर से</button>`; }
+
+// Initial kill
+setTimeout(()=>addKill('MISSION CONTROL ONLINE'),800);
+setTimeout(()=>addKill('राधे राधे - युद्ध शुरू'),1500);
+</script>
+<script>(function(){document.addEventListener("click",function(e){var a=e.target.closest("[data-product-id]");if(!a)return;e.preventDefault();var pid=a.getAttribute("data-product-id");if(pid)parent.postMessage({type:"ecto-artifact-link-click",productId:pid},"*")})})();</script>
+</body>
+</html>
